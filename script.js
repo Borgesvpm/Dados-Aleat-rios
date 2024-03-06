@@ -33,17 +33,33 @@ function calcularIQR(valores) {
   valores = valores.map(v => parseFloat(v)).sort((a, b) => a - b);
   const meioIndex = Math.floor(valores.length / 2);
 
-  // Divide o conjunto de dados em duas metades
   const lowerHalf = valores.slice(0, meioIndex);
-  const upperHalf = valores.length % 2 === 0 ? valores.slice(meioIndex) : valores.slice(meioIndex + 1);
+  let upperHalf;
 
-  // Reutiliza a função calcularMediana para calcular Q1 e Q3
-  const q1 = calcularMediana(lowerHalf);
-  const q3 = calcularMediana(upperHalf);
+  if (valores.length % 2 === 0) {
+    upperHalf = valores.slice(meioIndex);
+  } else {
+    upperHalf = valores.slice(meioIndex + 1);
+  }
+
+  // Assegurar que o cálculo use números, converter a saída de calcularMediana de volta para número, se necessário
+  const q1 = parseFloat(calcularMediana(lowerHalf));
+  const q3 = parseFloat(calcularMediana(upperHalf));
   const iqr = q3 - q1;
+  // Agora, limiteSup e limiteInf são calculados diretamente como números
+  const limiteSup = q3 + 1.5 * iqr;
+  const limiteInf = q1 - 1.5 * iqr;
 
-  return { iqr: iqr.toFixed(2), q1: q1, q3: q3 };
+  // Aplicar toFixed apenas quando for formatar a saída final
+  return { 
+    iqr: iqr.toFixed(2), 
+    q1: q1.toFixed(2), 
+    q3: q3.toFixed(2), 
+    ls: limiteSup.toFixed(2), 
+    li: limiteInf.toFixed(2)
+  };
 }
+
 
 // Reutiliza a função calcularMediana existente para calcular Q1 e Q3
 function calcularMediana(valores) {
@@ -90,8 +106,8 @@ function mostarResposta() {
     <p>IQR: ${iqrValues.iqr}</p>
     <p>Q1: ${iqrValues.q1}</p>
     <p>Q3: ${iqrValues.q3}</p>
-    <p>Limite Superior: ${(parseFloat(calcularMediana(dados)) + 1.5 * parseFloat(iqrValues.iqr)).toFixed(2)}</p>
-    <p>Limite Inferior: ${(parseFloat(calcularMediana(dados)) - 1.5 * parseFloat(iqrValues.iqr)).toFixed(2)}</p>
+    <p>Limite Superior: ${iqrValues.ls}</p>
+    <p>Limite Inferior: ${iqrValues.li}</p>
   `;
   document.getElementById("estatisticas").style.display = "block";
 }
