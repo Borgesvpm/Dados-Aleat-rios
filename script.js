@@ -1,7 +1,16 @@
 var dados = [];
 
-function gerarNumeroAleatorio(min, max) {
-  return (Math.random() * (max - min) + min).toFixed(2);
+function gerarNumeroAleatorio(min, max, skewFactor) {
+  let u = Math.random();
+  let v = Math.random();
+  // Creating a bias in the distribution
+  let skewed = Math.pow(u, skewFactor) * (Math.sign(v - 0.5) * -1);
+  // Normalizing skewed to be between 0 and 1
+  let normalized = (skewed + 1) / 2;
+  // Scaling the normalized value to the desired range [min, max]
+  let num = normalized * (max - min) + min;
+  // Rounding to 2 decimal places
+  return num.toFixed(2);
 }
 
 function calcularMedia(valores) {
@@ -49,6 +58,9 @@ function calcularIQR(valores) {
   // Agora, limiteSup e limiteInf são calculados diretamente como números
   const limiteSup = q3 + 1.5 * iqr;
   const limiteInf = q1 - 1.5 * iqr;
+  // Outliers
+  const outliers = dados.filter(number => number > limiteSup || number < limiteInf).sort((a,b) => +a - +b);
+  console.log(outliers)
 
   // Aplicar toFixed apenas quando for formatar a saída final
   return { 
@@ -56,7 +68,8 @@ function calcularIQR(valores) {
     q1: q1.toFixed(2), 
     q3: q3.toFixed(2), 
     ls: limiteSup.toFixed(2), 
-    li: limiteInf.toFixed(2)
+    li: limiteInf.toFixed(2),
+    out: outliers
   };
 }
 
@@ -83,7 +96,7 @@ function gerarTabela() {
   for (let i = 0; i < linhas; i++) {
     tabela += "<tr>";
     for (let j = 0; j < colunas; j++) {
-      let valor = gerarNumeroAleatorio(60, 120);
+      let valor = gerarNumeroAleatorio(60, 120, 2.4);
       dados.push(valor);
       tabela += `<td>${valor}</td>`;
     }
@@ -108,6 +121,8 @@ function mostarResposta() {
     <p>Q3: ${iqrValues.q3}</p>
     <p>Limite Superior: ${iqrValues.ls}</p>
     <p>Limite Inferior: ${iqrValues.li}</p>
+    <p>Número de outliers: ${iqrValues.out.length}</p>
+    <p>Valores outliers: [${iqrValues.out.join("; ")}]</p>
   `;
   document.getElementById("estatisticas").style.display = "block";
 }
